@@ -1,0 +1,92 @@
+@model SistemaChatbot.Models.EnderecoModel
+
+@{
+    ViewData["Title"] = "Buscar Endereço";
+}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">🤖 Integração ViaCEP com jQuery & MVC</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Salvar" method="post">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Cep" class="form-label fw-bold">Digite o CEP:</label>
+                        <input asp-for="Cep" id="cep" class="form-control" maxlength="9" placeholder="00000-000" required />
+                        <small class="text-muted">A busca será feita automaticamente ao digitar.</small>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Logradouro" class="form-label fw-bold">Logradouro:</label>
+                        <input asp-for="Logradouro" id="logradouro" class="form-control" readonly required />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Bairro" class="form-label fw-bold">Bairro:</label>
+                        <input asp-for="Bairro" id="bairro" class="form-control" readonly required />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Localidade" class="form-label fw-bold">Cidade:</label>
+                        <input asp-for="Localidade" id="cidade" class="form-control" readonly required />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Uf" class="form-label fw-bold">UF:</label>
+                        <input asp-for="Uf" id="uf" class="form-control" readonly required />
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label asp-for="Numero" class="form-label fw-bold">Número:</label>
+                        <input asp-for="Numero" class="form-control" placeholder="Ex: 123" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 fw-bold mt-2">Enviar dados para o Servidor</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#cep').blur(function() {
+                var cep = $(this).val().replace(/\D/g, '');
+
+                if (cep != "") {
+                    var validacep = /^[0-9]{8}$/;
+
+                    if(validacep.test(cep)) {
+                        // Preenche os campos com "..." enquanto consulta a API
+                        $("#logradouro").val("...");
+                        $("#bairro").val("...");
+                        $("#cidade").val("...");
+                        $("#uf").val("...");
+
+                        // Consulta a API ViaCEP usando AJAX do jQuery
+                        $.getJSON("https://viacep.com.br/ws/"+ cep +"/json/?callback=?", function(dados) {
+                            if (!("erro" in dados)) {
+                                // Atualiza os campos com os valores da API externa
+                                $("#logradouro").val(dados.logradouro);
+                                $("#bairro").val(dados.bairro);
+                                $("#cidade").val(dados.localidade);
+                                $("#uf").val(dados.uf);
+                            } else {
+                                alert("CEP não encontrado.");
+                                $("#logradouro").val("");
+                                $("#bairro").val("");
+                                $("#cidade").val("");
+                                $("#uf").val("");
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+}
